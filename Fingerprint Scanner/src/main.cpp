@@ -9,18 +9,21 @@
 #define GreenLED                9 //Pin to Green LED
 #define LockButton              10 //Manual lock button
 
+unsigned long starttime;
+unsigned long endtime;
 #include <Arduino.h>
 #include <Servo.h>
 #include <SparkFun_AS108M_Arduino_Library.h>
 #include <SparkFun_AS108M_Constants.h>
 #include <Willowlib.h>
 
-unsigned long starttime;
+
 bool initialize;
 int touchread;
 bool check;
 int currentstate;
 int laststate;
+bool Lockstate;
 
 void setup() {
   Serial.begin(57600);
@@ -33,6 +36,8 @@ void setup() {
   pinMode(LinActControlPin, OUTPUT);
   pinMode(RedLED, OUTPUT);
   pinMode(GreenLED, OUTPUT);
+  LockDoor();
+  Lockstate = true;
   Serial.println("=== Willow & Maddy's Fingerprint Security System  ===");
 }
 
@@ -49,13 +54,13 @@ void loop() {
     digitalWrite(LowPowerPin, HIGH);
   }
   while(initialize == true){
-    check = FingerSearch() 
+    check = FingerSearch(); 
     if (check == 0){
       digitalWrite(LowPowerPin, LOW); // sensor returned to low power mode
       Serial.println("Fingerprint Accepted");
       UnlockDoor();
+      Lockstate = false;
       delay(10000); //Wait 10 seconds before locking the door
-      LockDoor();
       initialize = false;
     }else if(check == 1){
       Serial.println("Fingerprint Denied");
@@ -70,6 +75,14 @@ void loop() {
   currentstate = digitalRead(LockButton);
   if(currentstate == HIGH && laststate == LOW){
     LockDoor();
+    Lockstate = true;
   }
   laststate = currentstate;
+  if(Lockstate == true){
+    digitalWrite(RedLED, HIGH);
+    digitalWrite(GreenLED, LOW);
+  }else{
+    digitalWrite(RedLED, LOW);
+    digitalWrite(GreenLED, HIGH);
+  }
 }

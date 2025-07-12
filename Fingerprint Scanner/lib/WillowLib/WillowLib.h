@@ -10,7 +10,6 @@
 #define PS_NO_FINGER         0x02
 #define PS_COMM_ERR          0x01
 
-unsigned long endtime;
 Servo handleMotor;
 Servo lockMotor;
 SoftwareSerial fingerSerial(RX, TX); // RX, TX
@@ -152,8 +151,8 @@ void FingerEnroll(uint16_t uID) {
 int FingerSearch() {
   Serial.println("Place finger on the scanner.");
   int x = WaitFingerPlaced();
-  if(x = 1){
-    return 2
+  if(x == 1){
+    return 2;
   }
   uint8_t res = PSGenChar(1);
   if (res != PS_OK) {
