@@ -57,30 +57,21 @@ int WaitFingerPlaced() {
     }
   }
 }
+
 void UnlockDoor() {
-  for (int pos=0; pos >= -90; pos--){
-    handleMotor.write(pos);
-    delay(15);
-  }
-  for(int pos=0; pos<=90; pos++){
-    handleMotor.write(pos);
-    delay(15);
-  }
+    handleMotor.write(45);
+    delay(2000);
+    handleMotor.write(90);
   Serial.println("Door Unlocked");
 }
 
 void LockDoor(){
-  for(int pos=0; pos<=360; pos++){
-      lockMotor.write(pos);
-      delay(15);
-    }
-  for (int pos=0; pos >= -360; pos--){
-    lockMotor.write(pos);
-    delay(15);
-  }
-    
+  lockMotor.write(180);
+  delay(2000);
+  lockMotor.write(0);
   Serial.println("Locked");
 }
+
 // Check finger presence
 bool FingerStatus() {
   return PSGetImage() != PS_NO_FINGER;
@@ -265,6 +256,5 @@ uint8_t PSStoreChar(uint16_t uID) {
 
   return packetBuffer[9];
 }
-
 
 #endif

@@ -1,16 +1,28 @@
+// Meow. I tried making things as clear as possible (because im just locked in).
+//
+// This should be the standard file the arduino will run on day to day to access
+// the room. 
+//
+// Salix Science & Maddy's Mischief © 2025
+
 // Configure pins
 #define RX                      2 //Recieve Pin
 #define TX                      3 //Transmit Pin
-#define TouchSensorPin          4 //Pin that recieves touch signal from sensor to enable power
-#define LowPowerPin             5 //Pin to put sensor in low power mode
-#define ServoControlPin         6 //Servo control pin
-#define LinActControlPin        7 //Linear actuator control pin
-#define RedLED                  8 //Pin to Red LED
-#define GreenLED                9 //Pin to Green LED
-#define LockButton              10 //Manual lock button
+#define TouchSensorPin          9 //Pin that recieves touch signal from sensor to enable power
+#define LowPowerPin             66 //Pin to put sensor in low power mode
+#define ServoControlPin         5 //Servo control pin
+#define LinActControlPin        66 //Linear actuator control pin
+#define RedLED                  6 //Pin to Red LED
+#define GreenLED                7 //Pin to Green LED
+#define LockButton              4 //Manual lock button
 
 unsigned long starttime;
 unsigned long endtime;
+bool initialize;
+bool check;
+int currentstate;
+bool lockstate;
+
 #include <Arduino.h>
 #include <Servo.h>
 #include <SparkFun_AS108M_Arduino_Library.h>
@@ -18,12 +30,7 @@ unsigned long endtime;
 #include <Willowlib.h>
 
 
-bool initialize;
-int touchread;
-bool check;
-int currentstate;
-int laststate;
-bool Lockstate;
+
 
 void setup() {
   Serial.begin(57600);
@@ -37,30 +44,37 @@ void setup() {
   pinMode(RedLED, OUTPUT);
   pinMode(GreenLED, OUTPUT);
   LockDoor();
-  Lockstate = true;
+  lockstate = true;
   Serial.println("=== Willow & Maddy's Fingerprint Security System  ===");
+  digitalWrite(RedLED, HIGH);
+  digitalWrite(GreenLED, LOW);
 }
 
 void loop() {
-  touchread = digitalRead(TouchSensorPin);
-  if(touchread == HIGH){ //detect whnen finger activates sensor
+
+  // detect whnen finger activates sensor
+  if(!digitalRead(TouchSensorPin)){ 
     initialize = true;
   }
-  if(initialize == true){ //Restart arduino clock for counting elapsed time
+
+// Restart arduino clock for counting elapsed time
+  if(initialize == true){ 
     noInterrupts ();
     timer0_millis = 0;
     interrupts ();
     starttime = millis();
     digitalWrite(LowPowerPin, HIGH);
   }
+
+  // While fingerprint sensor is on, come to one of three conclusions
   while(initialize == true){
     check = FingerSearch(); 
     if (check == 0){
-      digitalWrite(LowPowerPin, LOW); // sensor returned to low power mode
+      digitalWrite(LowPowerPin, LOW); // Sensor returned to low power mode
       Serial.println("Fingerprint Accepted");
       UnlockDoor();
-      Lockstate = false;
-      delay(10000); //Wait 10 seconds before locking the door
+      lockstate = false;
+      delay(10000); // Wait 10 seconds before locking the door for person to walk in
       initialize = false;
     }else if(check == 1){
       Serial.println("Fingerprint Denied");
@@ -71,14 +85,19 @@ void loop() {
       Serial.println("Timeout");
       initialize = false;
     }
+
   }
+  // Check to see if button is pressed
   currentstate = digitalRead(LockButton);
-  if(currentstate == HIGH && laststate == LOW){
+
+  // Make sure door isn't locked before attempting to lock door
+  if(currentstate == HIGH && lockstate == false){
     LockDoor();
-    Lockstate = true;
+    lockstate = true;
   }
-  laststate = currentstate;
-  if(Lockstate == true){
+
+  // Ensure LEDs updated
+  if(lockstate == true){
     digitalWrite(RedLED, HIGH);
     digitalWrite(GreenLED, LOW);
   }else{
