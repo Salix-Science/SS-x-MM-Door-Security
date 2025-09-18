@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 // Meow. I tried making things as clear as possible (because im just locked in).
 //
 // This should be the standard file the arduino will run on day to day to access
@@ -6,15 +8,15 @@
 // Salix Science & Maddy's Mischief © 2025
 
 // Configure pins
-#define RX                      2 //Recieve Pin
-#define TX                      3 //Transmit Pin
-#define TouchSensorPin          9 //Pin that recieves touch signal from sensor to enable power
-#define LowPowerPin             66 //Pin to put sensor in low power mode
-#define ServoControlPin         5 //Servo control pin
-#define LinActControlPin        66 //Linear actuator control pin
-#define RedLED                  6 //Pin to Red LED
-#define GreenLED                7 //Pin to Green LED
-#define LockButton              4 //Manual lock button
+constexpr uint16_t RX = 2;                //Recieve Pin
+constexpr uint16_t TX = 3;                //Transmit Pin
+constexpr uint16_t TouchSensorPin = 9;    //Pin that recieves touch signal from sensor to enable power
+constexpr uint16_t LowPowerPin = 66;      //Pin to put sensor in low power mode
+constexpr uint16_t ServoControlPin = 5;   //Servo control pin
+constexpr uint16_t LinActControlPin = 66; //Linear actuator control pin
+constexpr uint16_t RedLED = 6;            //Pin to Red LED
+constexpr uint16_t GreenLED = 7;          //Pin to Green LED
+constexpr uint16_t LockButton = 4;        //Manual lock button
 
 unsigned long starttime;
 unsigned long endtime;
@@ -28,9 +30,6 @@ bool lockstate;
 #include <SparkFun_AS108M_Arduino_Library.h>
 #include <SparkFun_AS108M_Constants.h>
 #include <Willowlib.h>
-
-
-
 
 void setup() {
   Serial.begin(57600);

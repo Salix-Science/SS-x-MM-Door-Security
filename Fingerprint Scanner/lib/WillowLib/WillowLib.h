@@ -1,14 +1,14 @@
-#ifndef WillowLib
-#define WillowLib
+#pragma once
+#include <stdint.h>
 #include <Servo.h>
 #include <SparkFun_AS108M_Arduino_Library.h>
 #include <SparkFun_AS108M_Constants.h>
 #include <SoftwareSerial.h>
 
 // Fingerprint sensor constants 
-#define PS_OK                0x00
-#define PS_NO_FINGER         0x02
-#define PS_COMM_ERR          0x01
+constexpr uint32_t PS_OK = 0x00;
+constexpr uint32_t PS_NO_FINGER = 0x02;
+constexpr uint32_t PS_COMM_ERR = 0x01;
 
 Servo handleMotor;
 Servo lockMotor;
@@ -256,5 +256,3 @@ uint8_t PSStoreChar(uint16_t uID) {
 
   return packetBuffer[9];
 }
-
-#endif
