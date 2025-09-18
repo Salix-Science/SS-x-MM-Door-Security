@@ -1,0 +1,3 @@
+[submodule "Fingerprint Scanner/Fingerprint Scanner/lib/SparkFun_AS108M_Fingerprint_Scanner_Arduino_Library"]
+	path = Fingerprint Scanner/Fingerprint Scanner/lib/SparkFun_AS108M_Fingerprint_Scanner_Arduino_Library
+	url = https://github.com/sparkfun/SparkFun_AS108M_Fingerprint_Scanner_Arduino_Library
