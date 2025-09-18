@@ -12,15 +12,5 @@ constexpr uint16_t RedLED = 6;              // Pin to Red LED
 constexpr uint16_t GreenLED = 7;            // Pin to Green LED
 constexpr uint16_t LockButton = 4;          // Manual lock button
 
-
-/*class Sensor {
-    uint64_t matchStartTime;
-    uint64_t matchEndTime;
-    bool check;
-    uint32_t currentState;
-    bool lockState;
-};*/
-
-
 extern unsigned long starttime;
 extern unsigned long endtime;

@@ -15,11 +15,18 @@
 Servo handleMotor;
 Servo lockMotor;
 
+void ResetServo() {
+  handleMotor.detach();
+  delay(500);
+  handleMotor.attach(ServoControlPin);
+}
+
 void UnlockDoor() {
-  handleMotor.write(75);
-  delay(3000);
+  handleMotor.write(60);
+  delay(10000);
   handleMotor.write(30);
-  delay(3000);
+  delay(1000);
+  ResetServo();
   Serial.println("Door Unlocked");
 }
 
@@ -64,7 +71,6 @@ void loop() {
     digitalWrite(LowPowerPin, LOW); // Sensor returned to low power mode
     Serial.println("Fingerprint Accepted");
     UnlockDoor();
-    delay(10000); // Wait 10 seconds before locking the door for person to walk in
   } else if (check == MatchResult::Denied) {
     Serial.println("Fingerprint Denied");
     digitalWrite(LowPowerPin, LOW);
