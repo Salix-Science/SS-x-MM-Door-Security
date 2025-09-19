@@ -11,6 +11,3 @@ constexpr uint16_t LinActControlPin = 66;   // Linear actuator control pin
 constexpr uint16_t RedLED = 6;              // Pin to Red LED
 constexpr uint16_t GreenLED = 7;            // Pin to Green LED
 constexpr uint16_t LockButton = 4;          // Manual lock button
-
-extern unsigned long starttime;
-extern unsigned long endtime;

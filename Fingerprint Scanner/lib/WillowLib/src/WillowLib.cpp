@@ -7,16 +7,24 @@ uint8_t packetBuffer[20];
 // Enrollment configuration
 constexpr uint8_t g_max_samples = 2; // Usually 2 samples needed
 
-void ShowIndexTable() {
+FingerprintSensor::FingerprintSensor(uint16_t transmitPin, uint16_t recievePin) : fingerSerial(TX, RX), startTime(0), endTime(0) {
+
+}
+
+void FingerprintSensor::begin(uint64_t baud) {
+  fingerSerial.begin(baud);
+}
+
+void FingerprintSensor::showIndexTable() {
   Serial.println("Requesting index table...");
   // Not implemented here
 }
 
 // Wait for finger placement
-DetectionResult WaitFingerPlaced() {
+DetectionResult FingerprintSensor::waitFingerPlaced() {
   Serial.println("Place your finger on the sensor...");
   while (true) {
-    if (FingerStatus()) {
+    if (fingerStatus()) {
       Serial.println("Finger detected.");
       delay(500); // Wait for finger stabilization
       return DetectionResult::Detected;
@@ -30,21 +38,21 @@ DetectionResult WaitFingerPlaced() {
 }
 
 // Check finger presence
-bool FingerStatus() { return PSGetImage() != PS_NO_FINGER; }
+bool FingerprintSensor::fingerStatus() { return psGetImage() != PS_NO_FINGER; }
 
 // Send GetImage command
-uint8_t PSGetImage() {
+uint8_t FingerprintSensor::psGetImage() {
   uint8_t cmd[] = {0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x03, 0x01, 0x00, 0x05};
   fingerSerial.write(cmd, sizeof(cmd));
 
-  if (!ReceivePacket(12))
+  if (!receivePacket(12))
     return PS_COMM_ERR;
 
   return packetBuffer[9];
 }
 
 // Receive bytes into packetBuffer
-bool ReceivePacket(uint8_t length) {
+bool FingerprintSensor::receivePacket(uint8_t length) {
   unsigned long start = millis();
   uint8_t idx = 0;
   while (idx < length) {
@@ -59,13 +67,13 @@ bool ReceivePacket(uint8_t length) {
 }
 
 // Enroll fingerprint for given ID
-void FingerEnroll(uint16_t uID) {
+void FingerprintSensor::fingerEnroll(uint16_t uID) {
   for (uint8_t i = 0; i < g_max_samples; i++) {
     Serial.print("Sample ");
     Serial.println(i + 1);
-    WaitFingerPlaced();
+    waitFingerPlaced();
 
-    uint8_t res = PSGenChar(i + 1);
+    uint8_t res = psGenChar(i + 1);
     if (res != PS_OK) {
       Serial.print("GenChar failed, error code: 0x");
       Serial.println(res, HEX);
@@ -73,16 +81,16 @@ void FingerEnroll(uint16_t uID) {
     }
 
     Serial.println("Remove finger...");
-    while (FingerStatus())
+    while (fingerStatus())
       delay(100);
   }
 
-  if (PSRegModule() != PS_OK) {
+  if (psRegModule() != PS_OK) {
     Serial.println("RegModule failed.");
     return;
   }
 
-  if (PSStoreChar(uID) != PS_OK) {
+  if (psStoreChar(uID) != PS_OK) {
     Serial.println("StoreChar failed.");
     return;
   }
@@ -90,15 +98,15 @@ void FingerEnroll(uint16_t uID) {
   Serial.println("Enrollment complete!");
 }
 
-MatchResult FingerSearch() {
+MatchResult FingerprintSensor::fingerSearch() {
   Serial.println("Place finger on the scanner.");
-  DetectionResult x = WaitFingerPlaced();
+  DetectionResult x = waitFingerPlaced();
 
   if (x == DetectionResult::Timeout) {
     return MatchResult::Timeout;
   }
   
-  uint8_t res = PSGenChar(1);
+  uint8_t res = psGenChar(1);
 
   if (res != PS_OK) {
     Serial.print("GenChar failed during search, error code: 0x");
@@ -107,7 +115,7 @@ MatchResult FingerSearch() {
   }
 
   uint16_t matchedID, score;
-  res = PSSearch(&matchedID, &score);
+  res = psSearch(&matchedID, &score);
 
   if (res == PS_OK) {
     Serial.print("Match found! ID=");
@@ -126,7 +134,7 @@ MatchResult FingerSearch() {
 }
 
 // Search command
-uint8_t PSSearch(uint16_t *matchedID, uint16_t *score) {
+uint8_t FingerprintSensor::psSearch(uint16_t *matchedID, uint16_t *score) {
   uint16_t startID = 0;
   uint16_t endID = 200; // Adjust according to your database size
   uint8_t cmd[] = {0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x08, 0x04, 0x01, (uint8_t)(startID >> 8), (uint8_t)(startID & 0xFF), (uint8_t)(endID >> 8), (uint8_t)(endID & 0xFF), 0x00, 0x00};
@@ -138,7 +146,7 @@ uint8_t PSSearch(uint16_t *matchedID, uint16_t *score) {
 
   fingerSerial.write(cmd, sizeof(cmd));
 
-  if (!ReceivePacket(16))
+  if (!receivePacket(16))
     return PS_COMM_ERR;
 
   if (packetBuffer[9] != PS_OK)
@@ -151,7 +159,7 @@ uint8_t PSSearch(uint16_t *matchedID, uint16_t *score) {
 }
 
 // Generate character file from image (GenChar)
-uint8_t PSGenChar(uint8_t bufID) {
+uint8_t FingerprintSensor::psGenChar(uint8_t bufID) {
   uint8_t cmd[] = {0xEF, 0x01, 0xFF, 0xFF,  0xFF, 0xFF, 0x01, 0x00, 0x04, 0x02, bufID, 0x00, 0x00};
   uint16_t sum = 0;
   for (uint8_t i = 6; i < 11; i++)
@@ -162,25 +170,25 @@ uint8_t PSGenChar(uint8_t bufID) {
   fingerSerial.write(cmd, sizeof(cmd));
   delay(150); // Wait for sensor to process
 
-  if (!ReceivePacket(12))
+  if (!receivePacket(12))
     return PS_COMM_ERR;
 
   return packetBuffer[9];
 }
 
 // Create template from char files
-uint8_t PSRegModule() {
+uint8_t FingerprintSensor::psRegModule() {
   uint8_t cmd[] = {0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x03, 0x05, 0x00, 0x09};
   fingerSerial.write(cmd, sizeof(cmd));
 
-  if (!ReceivePacket(12))
+  if (!receivePacket(12))
     return PS_COMM_ERR;
 
   return packetBuffer[9];
 }
 
 // Store template into flash library
-uint8_t PSStoreChar(uint16_t uID) {
+uint8_t FingerprintSensor::psStoreChar(uint16_t uID) {
   uint8_t cmd[] = {0xEF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0x00, 0x06, 0x06, 0x01, (uint8_t)(uID >> 8), (uint8_t)(uID & 0xFF), 0x00, 0x00};
   uint16_t sum = 0;
   for (uint8_t i = 6; i < 13; i++)
@@ -190,7 +198,7 @@ uint8_t PSStoreChar(uint16_t uID) {
 
   fingerSerial.write(cmd, sizeof(cmd));
 
-  if (!ReceivePacket(12))
+  if (!receivePacket(12))
     return PS_COMM_ERR;
 
   return packetBuffer[9];

@@ -12,6 +12,8 @@
 #include <SparkFun_AS108M_Constants.h>
 #include <Willowlib.h>
 
+extern volatile unsigned long timer0_millis;
+FingerprintSensor fingerprintSensor = FingerprintSensor(TX, RX);
 Servo handleMotor;
 Servo lockMotor;
 
@@ -39,7 +41,7 @@ void LockDoor() {
 
 void setup() {
   Serial.begin(57600);
-  fingerSerial.begin(57600); // Starts serial pins at standard sensor baudrate
+  fingerprintSensor.begin(57600); // Starts serial pins at standard sensor baudrate
   handleMotor.attach(ServoControlPin); // Connects motor object and associates with pin
   lockMotor.attach(LinActControlPin);
   pinMode(TouchSensorPin, INPUT);
@@ -65,7 +67,7 @@ void loop() {
   digitalWrite(LowPowerPin, HIGH);
   
   // While fingerprint sensor is on, come to one of three conclusions
-  MatchResult check = FingerSearch();
+  MatchResult check = fingerprintSensor.fingerSearch();
 
   if (check == MatchResult::Accepted) {
     digitalWrite(LowPowerPin, LOW); // Sensor returned to low power mode
