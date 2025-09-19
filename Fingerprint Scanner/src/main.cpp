@@ -63,7 +63,7 @@ void loop() {
   noInterrupts();
   timer0_millis = 0;
   interrupts();
-  starttime = millis();
+  fingerprintSensor.resetTimer();
   digitalWrite(LowPowerPin, HIGH);
   
   // While fingerprint sensor is on, come to one of three conclusions
@@ -80,7 +80,7 @@ void loop() {
     Serial.println("Error when trying to match fingerprint");
   } else if (check == MatchResult::Timeout) {
     Serial.println("Fingerprint search timed out");
-  } else if (endtime - starttime >= 7000) {
+  } else if (fingerprintSensor.hasElapsed(7000)) {
     digitalWrite(LowPowerPin, LOW);
     Serial.println("Timeout");
   }

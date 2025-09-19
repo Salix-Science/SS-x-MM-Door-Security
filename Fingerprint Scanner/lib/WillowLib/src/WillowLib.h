@@ -4,7 +4,7 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 #include <stdint.h>
-#include "globals.h"
+#include "Constants.h"
 
 // Fingerprint sensor constants
 constexpr uint32_t PS_OK = 0x00;
@@ -32,6 +32,8 @@ public:
     FingerprintSensor(uint16_t transmitPin, uint16_t recievePin);
 
     void begin(uint64_t baud);
+    void resetTimer();
+    bool hasElapsed(uint64_t duration);
     void showIndexTable();
     DetectionResult waitFingerPlaced();
     bool fingerStatus();

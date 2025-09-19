@@ -15,6 +15,14 @@ void FingerprintSensor::begin(uint64_t baud) {
   fingerSerial.begin(baud);
 }
 
+void FingerprintSensor::resetTimer() {
+  startTime = millis();
+}
+
+bool FingerprintSensor::hasElapsed(uint64_t duration) {
+  return endTime - startTime >= duration;
+}
+
 void FingerprintSensor::showIndexTable() {
   Serial.println("Requesting index table...");
   // Not implemented here
@@ -30,8 +38,8 @@ DetectionResult FingerprintSensor::waitFingerPlaced() {
       return DetectionResult::Detected;
     }
     delay(100);
-    endtime = millis();
-    if (endtime - starttime >= 7000) {
+    endTime = millis();
+    if (endTime - startTime >= 7000) {
       return DetectionResult::Timeout;
     }
   }
